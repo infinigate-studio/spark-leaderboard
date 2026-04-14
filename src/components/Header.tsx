@@ -5,7 +5,7 @@ export default function Header() {
     <header className="header">
       <img src={logo} alt="Spark" className="header__logo" />
       <h1 className="header__title">
-        Leaderboard
+        HPE Smart Data Leaderboard
       </h1>
     </header>
   );
