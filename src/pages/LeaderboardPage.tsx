@@ -1,6 +1,7 @@
 import Header from '../components/Header';
 import LeaderboardPanel from '../components/LeaderboardPanel';
 import { useLeaderboardData } from '../hooks/useLeaderboardData';
+import { useSiteSettings } from '../hooks/useSiteSettings';
 import spacemanBlue from '../img/spaceman_blue.svg';
 import spacemanCoral from '../img/spaceman_coral.svg';
 import spacemanTeal from '../img/spaceman_teal.svg';
@@ -12,8 +13,9 @@ import spaceshipCyan from '../img/spaceship_cyan.svg';
 
 export default function LeaderboardPage() {
   const { accountManagers, salesTeams, loading, changedIds } = useLeaderboardData();
+  const { settings, loading: settingsLoading } = useSiteSettings();
 
-  if (loading) {
+  if (loading || settingsLoading) {
     return (
       <div className="tv-view" style={{ alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--text-secondary)' }}>
@@ -25,10 +27,10 @@ export default function LeaderboardPage() {
 
   return (
     <div className="tv-view">
-      <Header />
+      <Header title={settings.page_title} />
       <div className="leaderboards">
         <LeaderboardPanel
-          title="Account Managers"
+          title={settings.panel_left_title}
           entries={accountManagers}
           changedIds={changedIds}
           icons={{
@@ -40,7 +42,7 @@ export default function LeaderboardPage() {
           iconType="spaceman"
         />
         <LeaderboardPanel
-          title="Sales Teams"
+          title={settings.panel_right_title}
           entries={salesTeams}
           changedIds={changedIds}
           icons={{

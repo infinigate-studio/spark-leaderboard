@@ -1,12 +1,14 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useLeaderboardData } from '../hooks/useLeaderboardData';
+import { useSiteSettings } from '../hooks/useSiteSettings';
 import { useAuth } from '../hooks/useAuth';
 import type { Team, LeaderboardEntry } from '../lib/types';
 
 export default function AdminPage() {
   const { accountManagers, salesTeams, loading } = useLeaderboardData();
+  const { settings, loading: settingsLoading, updateSetting } = useSiteSettings();
   const { signOut } = useAuth();
 
   return (
@@ -21,25 +23,107 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {loading ? (
+      {(loading || settingsLoading) ? (
         <p style={{ color: 'var(--text-secondary)' }}>Loading...</p>
       ) : (
-        <div className="admin__teams">
-          <TeamSection
-            title="Account Managers"
-            team="account_managers"
-            entries={accountManagers}
-          />
-          <TeamSection
-            title="Sales Teams"
-            team="sales_teams"
-            entries={salesTeams}
-          />
-        </div>
+        <>
+          <SettingsSection settings={settings} updateSetting={updateSetting} />
+
+          <div className="admin__teams">
+            <TeamSection
+              title={settings.panel_left_title}
+              team="account_managers"
+              entries={accountManagers}
+            />
+            <TeamSection
+              title={settings.panel_right_title}
+              team="sales_teams"
+              entries={salesTeams}
+            />
+          </div>
+        </>
       )}
     </div>
   );
 }
+
+/* ============================================
+   Settings Section
+   ============================================ */
+
+interface SettingsSectionProps {
+  settings: { page_title: string; panel_left_title: string; panel_right_title: string };
+  updateSetting: (key: 'page_title' | 'panel_left_title' | 'panel_right_title', value: string) => Promise<void>;
+}
+
+function SettingsSection({ settings, updateSetting }: SettingsSectionProps) {
+  const [pageTitle, setPageTitle] = useState(settings.page_title);
+  const [leftTitle, setLeftTitle] = useState(settings.panel_left_title);
+  const [rightTitle, setRightTitle] = useState(settings.panel_right_title);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setPageTitle(settings.page_title);
+    setLeftTitle(settings.panel_left_title);
+    setRightTitle(settings.panel_right_title);
+  }, [settings]);
+
+  async function handleSave(e: FormEvent) {
+    e.preventDefault();
+    await Promise.all([
+      updateSetting('page_title', pageTitle.trim()),
+      updateSetting('panel_left_title', leftTitle.trim()),
+      updateSetting('panel_right_title', rightTitle.trim()),
+    ]);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  return (
+    <div style={{ marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--bg-card)' }}>
+      <h2 className="admin__section-title">Page settings</h2>
+      <form className="admin-form" onSubmit={handleSave} style={{ flexWrap: 'wrap' }}>
+        <div className="admin-form__field" style={{ flex: '1 1 200px' }}>
+          <label htmlFor="setting-title">Page title</label>
+          <input
+            id="setting-title"
+            type="text"
+            value={pageTitle}
+            onChange={e => setPageTitle(e.target.value)}
+            required
+          />
+        </div>
+        <div className="admin-form__field" style={{ flex: '1 1 150px' }}>
+          <label htmlFor="setting-left">Left panel title</label>
+          <input
+            id="setting-left"
+            type="text"
+            value={leftTitle}
+            onChange={e => setLeftTitle(e.target.value)}
+            required
+          />
+        </div>
+        <div className="admin-form__field" style={{ flex: '1 1 150px' }}>
+          <label htmlFor="setting-right">Right panel title</label>
+          <input
+            id="setting-right"
+            type="text"
+            value={rightTitle}
+            onChange={e => setRightTitle(e.target.value)}
+            required
+          />
+        </div>
+        <button className="btn btn--primary" type="submit">
+          {saved ? 'Saved' : 'Save'}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+/* ============================================
+   Team Section
+   ============================================ */
 
 interface TeamSectionProps {
   title: string;
