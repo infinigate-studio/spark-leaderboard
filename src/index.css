@@ -540,12 +540,12 @@ input, select {
 .login__field label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .login__field input {
   padding: 10px 14px;
-  border: 1px solid rgba(42, 111, 140, 0.5);
+  border: 1px solid #009fc7;
   border-radius: 6px;
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -575,7 +575,7 @@ input, select {
   text-align: center;
   margin-top: 16px;
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 /* ============================================
